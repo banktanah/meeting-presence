@@ -1,10 +1,19 @@
 window.Utils = {
-    getDatetimeLocaleIndo: (date) => {
+    getDatetimeLocaleIndo: (date, showHour = false) => {
         let year = date.getFullYear();
         let monthName = date.toLocaleString('id', { month: 'long' });
         let _date = date.getDate().toString().padStart(2, '0');
+
+        let hours;
+        if(showHour){
+            hours = ' '+[
+                date.getHours().toString().padStart(2, '0'),
+                date.getMinutes().toString().padStart(2, '0'),
+                // date.getSeconds().toString().padStart(2, '0')
+            ].join(':');
+        }
     
-        return `${_date}-${monthName}-${year}`;
+        return `${_date}-${monthName}-${year}${hours}`;
     },
     formatPhoneWithDash: (phone) => {
         phone = phone.toString();

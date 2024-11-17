@@ -10,6 +10,9 @@ class Meeting extends Model
 
     protected $primaryKey = 'meeting_id';
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     // public $timestamps = false;
 
     /**

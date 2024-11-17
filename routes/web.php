@@ -24,6 +24,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::group(['prefix' => '/meeting'], function() {
     Route::get('/list', [MeetingController::class, 'index'])->name('meeting-list');
+    Route::get('/presence/{meeting_id}', [MeetingController::class, 'meeting_presence']);
     // Route::get('/list-by-instansi', [ContactPersonController::class, 'list_by_instansi'])->name('cp-list-by-ins');
     // Route::get('/input', [ContactPersonController::class, 'input'])->name('cp-input');
     // Route::post('/do-input', [ContactPersonController::class, 'do_input']);

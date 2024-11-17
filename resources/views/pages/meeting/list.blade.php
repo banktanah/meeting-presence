@@ -17,14 +17,14 @@
             </div>
             <div class="card-body table-border-style">
                 <div class="table-responsive">
-                    <table id="table-list-by-hpl" class="table table-striped table-hover">
+                    <table id="table-meeting-list" class="table table-striped table-hover">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>name</th>
-                                <th>start</th>
-                                <th>finish</th>
-                                <th>location</th>
+                                <th>Topik</th>
+                                <th>Start</th>
+                                <th>Jumlah Peserta</th>
+                                <th>Lokasi</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -36,7 +36,7 @@
         </div>
     </div>
     
-    <!-- Modal -->
+    <!-- Meeting-info Modal -->
     <div class="modal fade" id="keteranganModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-fullscreen-md-down modal-dialog-scrollable" role="document">
             <div class="modal-content">
@@ -48,6 +48,46 @@
                 </div>
                 <div class="modal-body">
                     ...
+                </div>
+                <div class="modal-footer">
+                    <div class="row" style="width: 100%;">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meeting-member Modal -->
+    <div class="modal fade" id="modal_meeting_member" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-fullscreen-md-down modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <div class="table-responsive">
+                                <table id="table-meeting-member" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="data-body">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <div class="row" style="width: 100%;">
@@ -71,6 +111,7 @@
 
         var baseUrl = "{{ url('') }}";
         var dtTableObj = null;
+        var meetings = [];
 
         $(document).ready(function () {
             loadData();
@@ -86,54 +127,28 @@
                         console.log(res);
                         $('#data-body').html('');
                         let no = 1;
-                        // if(res.data){
-                        //     for(let site_name in res.data){
-                        //         // console.log(site_name, res.data[site_name]);
-                        //         let pic_list = res.data[site_name];
+                        if(res.data){
+                            meetings = res.data;
+                            res.data.forEach(a => {
+                                let attendingMember = 
+                                $('#data-body').append(`
+                                    <tr>
+                                        <td>${no++}</td>
+                                        <td>${a.name}</td>
+                                        <td>${Utils.getDatetimeLocaleIndo(new Date(a.start_scheduled), true)}</td>
+                                        <td>${a.members.filter(b => b.attend_at != null).length+'/'+a.members.length}</td>
+                                        <td>${a.location}</td>
+                                        <td>
+                                            <a href="#" onclick="meetingEdit('${a.meeting_id}');" class="ml-2"><i class="fas fa-pen"></i></a>
+                                            <a href="#" onclick="meetingViewMember('${a.meeting_id}');" class="ml-2"><i class="fas fa-user" data-bs-toggle="modal" data-bs-target="#modal_meeting_member"></i></a>
+                                            <a href="${baseUrl+'/meeting/presence/'+a.meeting_id}" target="_blank" class="ml-2"><i class="fas fa-right-to-bracket"></i></a>
+                                        </td>
+                                    </tr>
+                                `);
+                            });
 
-                        //         let pic_html_contents = '';
-                        //         pic_list.forEach(a => {
-                        //             // console.log(a);
-                        //             pic_html_contents += `
-                        //                 <tr>
-                        //                     <td style="min-width: 7%;">${a.person.name}</td>
-                        //                     <td style="min-width: 7%;">${a.person.country_code} ${Utils.formatPhoneWithDash(a.person.phone)}</td>
-                        //                     <td>${a.jabatan? a.jabatan: ''}${a.instansi? ` - ${a.instansi}`: ''}</td>
-                        //                     <td style="min-width: 7%;">
-                        //                         <button type="button" onclick="viewKeterangan('${btoa(a.desc)}')" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#keteranganModal" >
-                        //                             View
-                        //                         </button>
-                        //                     </td>
-                        //                 </tr>
-                        //             `;
-                        //         });
-
-                        //         $('#data-body').append(`
-                        //             <tr>
-                        //                 <td>${no++}</td>
-                        //                 <td>
-                        //                     ${site_name}
-                        //                     <a href="#" onclick="cpEdit('${site_name}');" class="ml-2"><i class="fas fa-pen"></i></a>
-                        //                 </td>
-                        //                 <td colspan="3">
-                        //                     <table class="table table-bordered t able-striped" style="margin: 0">
-                        //                         <tr>
-                        //                             <th>Name</th>
-                        //                             <th>Phone</th>
-                        //                             <th>Jabatan/Instansi</th>
-                        //                             <th>Keterangan</th>
-                        //                         </tr>
-                        //                         ${pic_html_contents}
-                        //                     </table>
-                        //                 </td>
-                        //             </tr>
-                        //         `);
-
-                        //         Utils.initializeBootstrapTooltips();
-                        //     }
-
-                        //     dtTableObj = new DataTable('#table-list-by-hpl');
-                        // }
+                            dtTableObj = new DataTable('#table-meeting-list');
+                        }
                     }
                 }
             });
@@ -144,6 +159,31 @@
             modal.find('.modal-title').html(``);
 
             modal.find('.modal-body').html(atob(base64text));
+        }
+
+        function meetingViewMember(meeting_id){
+            let modal = $('#modal_meeting_member');
+
+            let meetingData = meetings.find(a => meeting_id = meeting_id);
+            modal.find('.modal-title').html(meetingData?.name);
+
+            let tableMember = modal.find('#table-meeting-member').find('#data-body');
+            tableMember.html('');
+
+            if(meetingData?.members.length > 0){
+                let no = 1;
+                meetingData.members.forEach(a => {
+                    tableMember.append(`
+                        <tr>
+                            <td>${no++}</td>
+                            <td>${a.name}</td>
+                            <td>${a.attend_at? 'Hadir': 'Belum/Tidak Hadir'}</td>
+                        </tr>
+                    `);
+                });
+
+                new DataTable('#table-meeting-member');
+            }
         }
     </script>
 @endsection

@@ -15,4 +15,9 @@ class MeetingController extends _BaseController
     {
         return view('pages/meeting/list');
     }
+
+    public function meeting_presence(string $meeting_id)
+    {
+        return view('pages/meeting/presence', ['meeting_id' => $meeting_id]);
+    }
 }

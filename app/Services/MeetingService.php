@@ -23,6 +23,15 @@ class MeetingService
         return $rs;
     }
 
+    public function get(string $meeting_id){
+        $rs = Meeting::
+            with('members')
+            ->where('meeting_id', $meeting_id)
+            ->first();
+
+        return $rs;
+    }
+
     public function add($input){
         try {
             DB::beginTransaction();
@@ -60,6 +69,15 @@ class MeetingService
         }
     }
 
+    public function listMember(string $meeting_id){
+        $rs = Meeting::
+            with('members')
+            ->where('meeting_id', $meeting_id)
+            ->get();
+
+        return $rs->members;
+    }
+
     public function addMember($input){
         try {
             DB::beginTransaction();
@@ -76,6 +94,31 @@ class MeetingService
             $newMember = new MeetingMember();
             $newMember->fill($input);
             $newMember->save();
+        
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function attend($meeting_member_id, $signature){
+        try {
+            DB::beginTransaction();
+
+            $mm = MeetingMember::
+                where('meeting_member_id', $meeting_member_id)
+                ->first();
+
+            if(empty($mm)){
+                throw new \Exception("Member with the specified id does not exists");
+            }
+
+            $mm->fill([
+                'attend_at' => Carbon::now(),
+                'digital_signature' => $signature
+            ]);
+            $mm->save();
         
             DB::commit();
         } catch (\Throwable $e) {

@@ -21,4 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['prefix' => '/meeting'], function() {
     Route::get('/list', [MeetingApi::class, 'list']);
+    Route::get('/get/{meeting_id}', [MeetingApi::class, 'get']);
+    Route::get('/members/{meeting_id}', [MeetingApi::class, 'members']);
+    Route::post('/presence', [MeetingApi::class, 'presence']);
 });

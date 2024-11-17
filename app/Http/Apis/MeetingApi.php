@@ -22,6 +22,26 @@ class MeetingApi extends BaseController
         return response()->json(new ApiResponse($res));
     }
 
+    public function get(string $meeting_id){
+        $res = $this->meetingService->get($meeting_id);
+
+        return response()->json(new ApiResponse($res));
+    }
+
+    public function members(string $meeting_id){
+        $res = $this->meetingService->listMember($meeting_id);
+
+        return response()->json(new ApiResponse($res));
+    }
+
+    public function presence(){
+        $params = request()->input();
+
+        $this->meetingService->attend($params['meeting_member_id'], $params['signature']);
+
+        return response()->json(new ApiResponse());
+    }
+
     public function get_file(string $code){
         $tmp = base64_decode($code);
         $fileinfo = json_decode(base64_decode($code));
