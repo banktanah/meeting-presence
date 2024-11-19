@@ -1,7 +1,7 @@
 @extends('_template')
 
 @section('title')
-    List By HPL
+    Meeting List
 @endsection
 
 @section('header_imports')
@@ -16,6 +16,7 @@
                 <span class="d-block m-t-5"></span>
             </div>
             <div class="card-body table-border-style">
+                <div class="row"></div>
                 <div class="table-responsive">
                     <table id="table-meeting-list" class="table table-striped table-hover">
                         <thead>
@@ -36,8 +37,8 @@
         </div>
     </div>
     
-    <!-- Meeting-info Modal -->
-    <div class="modal fade" id="keteranganModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Meeting-setting Modal -->
+    <div class="modal fade" id="modal_meeting_setting" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-fullscreen-md-down modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -47,11 +48,44 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    ...
+                    <div class="row form-group">
+                        <div></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">Name</div>
+                        <div class="col-8">
+                            <input id="meeting_name" type="text" value=""/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">Scheduled Start</div>
+                        <div class="col-8">
+                            <input id="meeting_start" type="text" value=""/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">Scheduled Finish</div>
+                        <div class="col-8">
+                            <input id="meeting_finish" type="text" value=""/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">Location</div>
+                        <div class="col-8">
+                            <textarea id="meeting_location"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="anonymous_attend">Anonymous Attendance</label>
+                            <input id="anonymous_attend" type="checkbox" value="">
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <div class="row" style="width: 100%;">
                         <div class="col-12">
+                            <button id="btn_save_setting" data-meeting-id="" type="button" onclick="saveMeetingSetting()" class="btn btn-success float-start" data-bs-toggle="modal" data-bs-target="#modal_presence">Save</button>
                             <button type="button" class="btn btn-secondary float-end" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
@@ -85,6 +119,33 @@
                                     <tbody id="data-body">
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-4">Name</div>
+                        <div class="col-8">
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-4">NIP/NIK</div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">Role</div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-success">Add Member</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -135,11 +196,11 @@
                                     <tr>
                                         <td>${no++}</td>
                                         <td>${a.name}</td>
-                                        <td>${Utils.getDatetimeLocaleIndo(new Date(a.start_scheduled), true)}</td>
+                                        <td>${Utils.simpleDateFormat(new Date(a.scheduled_start), true)}</td>
                                         <td>${a.members.filter(b => b.attend_at != null).length+'/'+a.members.length}</td>
                                         <td>${a.location}</td>
                                         <td>
-                                            <a href="#" onclick="meetingEdit('${a.meeting_id}');" class="ml-2"><i class="fas fa-pen"></i></a>
+                                            <a href="#" onclick="meetingSetting('${a.meeting_id}');" class="ml-2"><i class="fas fa-gear" data-bs-toggle="modal" data-bs-target="#modal_meeting_setting"></i></a>
                                             <a href="#" onclick="meetingViewMember('${a.meeting_id}');" class="ml-2"><i class="fas fa-user" data-bs-toggle="modal" data-bs-target="#modal_meeting_member"></i></a>
                                             <a href="${baseUrl+'/meeting/presence/'+a.meeting_id}" target="_blank" class="ml-2"><i class="fas fa-right-to-bracket"></i></a>
                                         </td>
@@ -154,18 +215,29 @@
             });
         }
         
-        function viewKeterangan(base64text){
-            let modal = $('#keteranganModal');
-            modal.find('.modal-title').html(``);
+        function meetingAdd(){
+            let modal = $('#modal_meeting_setting');
+            
+            let meetingData = meetings.find(a => meeting_id = meeting_id);
+            modal.find('.modal-title').html(`Add new meeting`);
 
-            modal.find('.modal-body').html(atob(base64text));
+            modal.find('#btn_save_setting').attr('data-meeting-id', '');
+        }
+        
+        function meetingSetting(meeting_id){
+            let modal = $('#modal_meeting_setting');
+            
+            let meetingData = meetings.find(a => meeting_id = meeting_id);
+            modal.find('.modal-title').html(`Setting - ${meetingData?.name}`);
+
+            modal.find('#btn_save_setting').attr('data-meeting-id', meeting_id);
         }
 
         function meetingViewMember(meeting_id){
             let modal = $('#modal_meeting_member');
 
             let meetingData = meetings.find(a => meeting_id = meeting_id);
-            modal.find('.modal-title').html(meetingData?.name);
+            modal.find('.modal-title').html(`Member - ${meetingData?.name}`);
 
             let tableMember = modal.find('#table-meeting-member').find('#data-body');
             tableMember.html('');
@@ -184,6 +256,15 @@
 
                 new DataTable('#table-meeting-member');
             }
+        }
+
+        function saveMeetingSetting(){
+            let modal = $('#modal_meeting_setting');
+
+            let btnSave = modal.find('#btn_save_setting');
+            let meetingId = btnSave.attr('data-meeting-id');
+
+
         }
     </script>
 @endsection

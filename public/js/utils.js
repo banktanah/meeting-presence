@@ -15,6 +15,22 @@ window.Utils = {
     
         return `${_date}-${monthName}-${year}${hours}`;
     },
+    simpleDateFormat: (date, showHour = false) => {
+        let year = date.getFullYear();
+        let month = (date.getMonth()+1).toString().padStart(2, '0');
+        let _date = date.getDate().toString().padStart(2, '0');
+
+        let hours;
+        if(showHour){
+            hours = ' '+[
+                date.getHours().toString().padStart(2, '0'),
+                date.getMinutes().toString().padStart(2, '0'),
+                // date.getSeconds().toString().padStart(2, '0')
+            ].join(':');
+        }
+    
+        return `${year}-${month}-${_date}${hours}`;
+    },
     formatPhoneWithDash: (phone) => {
         phone = phone.toString();
     

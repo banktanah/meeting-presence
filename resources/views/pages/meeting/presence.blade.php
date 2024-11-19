@@ -15,7 +15,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header">
-                <h5>List Meeting</h5>
+                <h5>Daftar Peserta</h5>
                 <span class="d-block m-t-5"></span>
             </div>
             <div class="card-body table-border-style">
@@ -117,7 +117,7 @@
                                         <tr>
                                             <td>${no++}</td>
                                             <td>${a.name}</td>
-                                            <td>${a.attend_at? Utils.getDatetimeLocaleIndo(new Date(a.attend_at), true): ''}</td>
+                                            <td>${a.attend_at? Utils.simpleDateFormat(new Date(a.attend_at), true): ''}</td>
                                             <td>
                                                 <a href="#" onclick="presence(${a.meeting_member_id})" class="fas fa-right-to-bracket" data-bs-toggle="modal" data-bs-target="#modal_presence"></a>
                                             </td>

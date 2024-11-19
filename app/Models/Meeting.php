@@ -24,8 +24,8 @@ class Meeting extends Model
         'name', 
         'description', 
         'location', 
-        'start_scheduled', 
-        'finish_scheduled', 
+        'scheduled_start', 
+        'scheduled_finish', 
         'started_at', 
         'finished_at'
     ];
@@ -43,8 +43,8 @@ class Meeting extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'start_scheduled' => 'datetime',
-        'finish_scheduled' => 'datetime',
+        'scheduled_start' => 'datetime',
+        'scheduled_finish' => 'datetime',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];

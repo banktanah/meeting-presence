@@ -36,22 +36,21 @@ class MeetingService
         try {
             DB::beginTransaction();
 
-            $start_scheduled = Carbon::createFromFormat('d/m/Y', '11/06/1990');
-            $finish_scheduled = Carbon::createFromFormat('d/m/Y', '11/06/1990');
+            $scheduled_start = Carbon::createFromFormat('d/m/Y', '11/06/1990');
+            $scheduled_finish = Carbon::createFromFormat('d/m/Y', '11/06/1990');
 
             $overlap_meeting = Meeting::
                 where('location', $input['location'])
-                ->where(function($q) use ($start_scheduled, $finish_scheduled){
-                    $q->where(function($q2) use ($start_scheduled){
-                        $q2->where('start_scheduled', '<=', $start_scheduled);
-                        $q2->where($start_scheduled, '<=', 'finish_scheduled');
+                ->where(function($q) use ($scheduled_start, $scheduled_finish){
+                    $q->where(function($q2) use ($scheduled_start){
+                        $q2->where('scheduled_start', '<=', $scheduled_start);
+                        $q2->where($scheduled_start, '<=', 'scheduled_finish');
                     });
-                    $q->orWhere(function($q2) use ($finish_scheduled){
-                        $q2->where('start_scheduled', '<=', $finish_scheduled);
-                        $q2->where($finish_scheduled, '<=', 'finish_scheduled');
+                    $q->orWhere(function($q2) use ($scheduled_finish){
+                        $q2->where('scheduled_start', '<=', $scheduled_finish);
+                        $q2->where($scheduled_finish, '<=', 'scheduled_finish');
                     });
                 })
-                ->where('id_number', $input['id_number'])
                 ->first();
 
             if(!empty($overlap_meeting)){
@@ -62,6 +61,28 @@ class MeetingService
             $newMeeting->fill($input);
             $newMeeting->save();
         
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function update($input){
+        try {
+            DB::beginTransaction();
+
+            $meeting = Meeting::
+                where('meeting_id', $input['meeting_id'])
+                ->first();
+
+            if(empty($meeting)){
+                throw new \Exception("Meeting with the specified id does not exists");
+            }
+
+            $meeting->fill($input);
+            $meeting->save();
+
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollback();
