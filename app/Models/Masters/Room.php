@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Masters;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MeetingMember extends Model
+class Room extends Model
 {
-    protected $table = 'meeting_member';
+    protected $table = 'master_room';
 
-    protected $primaryKey = 'meeting_member_id';
+    protected $primaryKey = 'room_id';
 
     public $incrementing = false;
     protected $keyType = 'string';
@@ -21,15 +21,9 @@ class MeetingMember extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'meeting_id',
-        'id_number',
+        'room_id', 
         'name', 
-        'role',
-        'description', 
-        'is_attend', 
-        'attend_at', 
-        'digital_signature', 
-        'photo'
+        'description'
     ];
 
     /**
@@ -37,17 +31,12 @@ class MeetingMember extends Model
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'digital_signature', 
-        'photo'
-    ];
+    protected $hidden = [];
 
     /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'attend_at' => 'datetime',
-    ];
+    protected $casts = [];
 }

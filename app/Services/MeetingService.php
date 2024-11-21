@@ -91,12 +91,19 @@ class MeetingService
     }
 
     public function listMember(string $meeting_id){
-        $rs = Meeting::
-            with('members')
-            ->where('meeting_id', $meeting_id)
+        $rs = MeetingMember::where('meeting_id', $meeting_id)
             ->get();
 
-        return $rs->members;
+        return $rs;
+    }
+
+    public function getMemberDetail(string $meeting_member_id){
+        $rs = MeetingMember::where('meeting_member_id', $meeting_member_id)
+            ->first();
+
+        $rs->makeVisible(['digital_signature', 'photo']);
+
+        return $rs;
     }
 
     public function addMember($input){
@@ -123,22 +130,21 @@ class MeetingService
         }
     }
 
-    public function attend($meeting_member_id, $signature){
+    public function attend($input){
         try {
             DB::beginTransaction();
 
             $mm = MeetingMember::
-                where('meeting_member_id', $meeting_member_id)
+                where('meeting_member_id', $input['meeting_member_id'])
                 ->first();
 
             if(empty($mm)){
                 throw new \Exception("Member with the specified id does not exists");
             }
 
-            $mm->fill([
-                'attend_at' => Carbon::now(),
-                'digital_signature' => $signature
-            ]);
+            $input['attend_at'] = Carbon::now();
+
+            $mm->fill($input);
             $mm->save();
         
             DB::commit();

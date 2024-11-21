@@ -36,8 +36,17 @@ class MeetingApi extends BaseController
 
     public function presence(){
         $params = request()->input();
+        $json = request()->json()->all();
 
-        $this->meetingService->attend($params['meeting_member_id'], $params['signature']);
+        $this->meetingService->attend($json);
+
+        return response()->json(new ApiResponse());
+    }
+
+    public function add(){
+        $json = request()->json()->all();
+
+        $this->meetingService->add($json);
 
         return response()->json(new ApiResponse());
     }

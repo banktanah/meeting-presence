@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Apis\MasterApi;
 use App\Http\Apis\MeetingApi;
+use App\Http\Apis\MeetingMemberApi;
+use App\Models\MeetingMember;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,9 +22,18 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::group(['prefix' => '/master'], function() {
+    Route::get('/room', [MasterApi::class, 'list_room']);
+});
+
 Route::group(['prefix' => '/meeting'], function() {
     Route::get('/list', [MeetingApi::class, 'list']);
     Route::get('/get/{meeting_id}', [MeetingApi::class, 'get']);
     Route::get('/members/{meeting_id}', [MeetingApi::class, 'members']);
     Route::post('/presence', [MeetingApi::class, 'presence']);
+    Route::post('/add', [MeetingApi::class, 'add']);
+});
+
+Route::group(['prefix' => '/meeting-member'], function() {
+    Route::post('/detail', [MeetingMemberApi::class, 'detail']);
 });
