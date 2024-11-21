@@ -23,10 +23,13 @@ class MeetingService
         return $rs;
     }
 
-    public function get(string $meeting_id){
+    public function get(string $meeting_id_or_code){
         $rs = Meeting::
             with('members')
-            ->where('meeting_id', $meeting_id)
+            ->where(function($q) use ($meeting_id_or_code){
+                $q->where('meeting_id', $meeting_id_or_code);
+                $q->orWhere('code', $meeting_id_or_code);
+            })
             ->first();
 
         return $rs;

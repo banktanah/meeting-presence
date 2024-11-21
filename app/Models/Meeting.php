@@ -35,7 +35,7 @@ class Meeting extends Model
      *
      * @var array<int, string>
      */
-    protected $hidden = [];
+    protected $hidden = ['code'];
 
     /**
      * The attributes that should be cast.

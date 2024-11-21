@@ -22,8 +22,8 @@ class MeetingApi extends BaseController
         return response()->json(new ApiResponse($res));
     }
 
-    public function get(string $meeting_id){
-        $res = $this->meetingService->get($meeting_id);
+    public function get(string $meeting_id_or_code){
+        $res = $this->meetingService->get($meeting_id_or_code);
 
         return response()->json(new ApiResponse($res));
     }
