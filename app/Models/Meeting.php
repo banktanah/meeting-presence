@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Masters\MeetingType;
 use Illuminate\Database\Eloquent\Model;
 
 class Meeting extends Model
@@ -21,6 +22,7 @@ class Meeting extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'meeting_id',
         'name', 
         'description', 
         'location', 
@@ -35,7 +37,10 @@ class Meeting extends Model
      *
      * @var array<int, string>
      */
-    protected $hidden = ['code'];
+    protected $hidden = [
+        'code',
+        'meeting_type_id'
+    ];
 
     /**
      * The attributes that should be cast.
@@ -48,6 +53,12 @@ class Meeting extends Model
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];
+
+    protected $with = ['meeting_type', 'members'];
+
+    public function meeting_type(){
+        return $this->belongsTo(MeetingType::class, 'meeting_type_id', 'meeting_type_id');
+    }
     
     public function members()
     {

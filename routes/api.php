@@ -24,6 +24,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['prefix' => '/master'], function() {
     Route::get('/room', [MasterApi::class, 'list_room']);
+    Route::get('/meeting-type', [MasterApi::class, 'list_meeting_type']);
 });
 
 Route::group(['prefix' => '/meeting'], function() {

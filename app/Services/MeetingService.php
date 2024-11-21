@@ -16,17 +16,14 @@ class MeetingService
     }
 
     public function list(){
-        $rs = Meeting::
-            with('members')
-            ->get();
+        $rs = Meeting::get();
 
         return $rs;
     }
 
     public function get(string $meeting_id_or_code){
         $rs = Meeting::
-            with('members')
-            ->where(function($q) use ($meeting_id_or_code){
+            where(function($q) use ($meeting_id_or_code){
                 $q->where('meeting_id', $meeting_id_or_code);
                 $q->orWhere('code', $meeting_id_or_code);
             })
@@ -47,18 +44,20 @@ class MeetingService
                 ->where(function($q) use ($scheduled_start, $scheduled_finish){
                     $q->where(function($q2) use ($scheduled_start){
                         $q2->where('scheduled_start', '<=', $scheduled_start);
-                        $q2->where($scheduled_start, '<=', 'scheduled_finish');
+                        $q2->where('scheduled_finish', '>', $scheduled_start);
                     });
                     $q->orWhere(function($q2) use ($scheduled_finish){
                         $q2->where('scheduled_start', '<=', $scheduled_finish);
-                        $q2->where($scheduled_finish, '<=', 'scheduled_finish');
+                        $q2->where('scheduled_finish', '>', $scheduled_finish);
                     });
                 })
                 ->first();
 
-            if(!empty($overlap_meeting)){
-                throw new \Exception("Meeting within the specified schedule is already exists");
-            }
+            // if(!empty($overlap_meeting)){
+            //     throw new \Exception("Meeting within the specified schedule is already exists");
+            // }
+
+            $input['meeting_id'] = $this->generateMeetingId();
 
             $newMeeting = new Meeting();
             $newMeeting->fill($input);
@@ -69,6 +68,23 @@ class MeetingService
             DB::rollback();
             throw $e;
         }
+    }
+
+    private function generateMeetingId(){
+        $date=date_create();
+        $meetingIdPrefix = 'M'.date_format($date,"ymd");
+
+        $lastMeeting = Meeting::where('meeting_id', 'like', $meetingIdPrefix.'%')->orderBy('meeting_id', 'DESC')->first();
+
+        $meetingNumberToday = 1;
+        if(!empty($lastMeeting)){
+            $tempArr = explode($meetingIdPrefix, $lastMeeting->meeting_id);
+            $a = 1;
+        }
+
+        $newMeetingId = $meetingIdPrefix.str_pad($meetingNumberToday, 4, "0", STR_PAD_LEFT);
+
+        return $newMeetingId;
     }
 
     public function update($input){
