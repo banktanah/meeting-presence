@@ -37,4 +37,5 @@ Route::group(['prefix' => '/meeting'], function() {
 
 Route::group(['prefix' => '/meeting-member'], function() {
     Route::post('/detail', [MeetingMemberApi::class, 'detail']);
+    Route::post('/add', [MeetingMemberApi::class, 'add']);
 });

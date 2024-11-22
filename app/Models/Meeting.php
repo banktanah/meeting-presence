@@ -29,7 +29,8 @@ class Meeting extends Model
         'scheduled_start', 
         'scheduled_finish', 
         'started_at', 
-        'finished_at'
+        'finished_at',
+        'meeting_type_id'
     ];
 
     /**
@@ -38,7 +39,7 @@ class Meeting extends Model
      * @var array<int, string>
      */
     protected $hidden = [
-        'code',
+        // 'code',
         'meeting_type_id'
     ];
 

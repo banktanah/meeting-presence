@@ -58,6 +58,7 @@ class MeetingService
             // }
 
             $input['meeting_id'] = $this->generateMeetingId();
+            $input['code'] = $this->generateMeetingCode();
 
             $newMeeting = new Meeting();
             $newMeeting->fill($input);
@@ -79,12 +80,28 @@ class MeetingService
         $meetingNumberToday = 1;
         if(!empty($lastMeeting)){
             $tempArr = explode($meetingIdPrefix, $lastMeeting->meeting_id);
-            $a = 1;
+            $meetingNumberToday = intval($tempArr[1]);
+            $meetingNumberToday++;
         }
 
         $newMeetingId = $meetingIdPrefix.str_pad($meetingNumberToday, 4, "0", STR_PAD_LEFT);
 
         return $newMeetingId;
+    }
+
+    private function generateMeetingCode() {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#_@';
+        $characters_length = strlen($characters);
+        $random_string = '';
+    
+        // Generate random characters until the string reaches desired length
+        $length_of_string = 8;
+        for ($i = 0; $i < $length_of_string; $i++) {
+            $random_index = random_int(0, $characters_length - 1);
+            $random_string .= $characters[$random_index];
+        }
+    
+        return $random_string;
     }
 
     public function update($input){
@@ -125,24 +142,25 @@ class MeetingService
         return $rs;
     }
 
-    public function addMember($input){
+    public function addMember($meeting_id, $members){
         try {
             DB::beginTransaction();
+            
+            $results = [];
+            if(!empty($members)){
+                foreach($members as $row){
+                    $row['meeting_id'] = $meeting_id;
+                    $newMember = new MeetingMember();
+                    $newMember->fill($row);
+                    $newMember->save();
 
-            $existing_member = MeetingMember::
-                where('meeting_id', $input['meeting_id'])
-                ->where('id_number', $input['id_number'])
-                ->first();
-
-            if(!empty($existing_member)){
-                throw new \Exception("Member with the specified id_number is already exists");
+                    $results []= $newMember;
+                }
             }
 
-            $newMember = new MeetingMember();
-            $newMember->fill($input);
-            $newMember->save();
-        
             DB::commit();
+
+            return $results;
         } catch (\Throwable $e) {
             DB::rollback();
             throw $e;
@@ -153,9 +171,37 @@ class MeetingService
         try {
             DB::beginTransaction();
 
-            $mm = MeetingMember::
-                where('meeting_member_id', $input['meeting_member_id'])
-                ->first();
+            // $mm = MeetingMember::select('*')
+            //     ->where('meeting_member_id', !empty($input['meeting_member_id'])? $input['meeting_member_id']: '')
+            //     ->orWhere(function($q) use ($input){
+            //         $q->where('meeting_id', $input['meeting_id']);
+            //         if()
+            //         $q->where(function($q2) use($input){
+            //             $q2->where('id_number', $scheduled_start);
+            //             $q2->orWhere('id_number', $scheduled_start);
+            //         });
+            //     })
+            //     ->first();
+
+            $queryable = MeetingMember::select('*');
+            if(!empty($input['meeting_member_id'])){
+                $queryable = $queryable->where('meeting_member_id', $input['meeting_member_id']);
+            }else{
+                $queryable = $queryable->where('meeting_id', $input['meeting_id']);
+                if(!empty($input['id_number'])){
+                    $queryable = $queryable->where('id_number', $input['id_number']);
+                }else if(!empty($input['name'])){
+                    $queryable = $queryable->where('name', $input['name']);
+                }else if(!empty($input['phone'])){
+                    $queryable = $queryable->where('phone', $input['phone']);
+                }else if(!empty($input['email'])){
+                    $queryable = $queryable->where('email', $input['email']);
+                }else{
+                    throw new \Exception("No proper identification fields given for signing attendance", 1);
+                }
+            }
+
+            $mm = $queryable->first();
 
             if(empty($mm)){
                 throw new \Exception("Member with the specified id does not exists");
@@ -165,7 +211,7 @@ class MeetingService
 
             $mm->fill($input);
             $mm->save();
-        
+
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollback();

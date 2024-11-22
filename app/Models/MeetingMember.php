@@ -10,8 +10,8 @@ class MeetingMember extends Model
 
     protected $primaryKey = 'meeting_member_id';
 
-    public $incrementing = false;
-    protected $keyType = 'string';
+    // public $incrementing = false;
+    // protected $keyType = 'string';
 
     // public $timestamps = false;
 
@@ -29,7 +29,11 @@ class MeetingMember extends Model
         'is_attend', 
         'attend_at', 
         'digital_signature', 
-        'photo'
+        'photo',
+        'instansi',
+        'jabatan',
+        'phone',
+        'email'
     ];
 
     /**
