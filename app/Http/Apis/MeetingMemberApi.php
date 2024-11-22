@@ -23,6 +23,14 @@ class MeetingMemberApi  extends BaseController
         return response()->json(new ApiResponse($res));
     }
 
+    public function update(){
+        $json = request()->json()->all();
+
+        $this->meetingService->updateMember($json);
+
+        return response()->json(new ApiResponse());
+    }
+
     public function detail(){
         $json = request()->json()->all();
         $res = $this->meetingService->getMemberDetail($json['meeting_member_id']);

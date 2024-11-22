@@ -172,6 +172,28 @@ class MeetingService
         }
     }
 
+    public function updateMember($input){
+        try {
+            DB::beginTransaction();
+
+            $existing = MeetingMember::
+                where('meeting_member_id', $input['meeting_member_id'])
+                ->first();
+
+            if(empty($existing)){
+                throw new ApiException("Meeting-Member with the specified id does not exists");
+            }
+
+            $existing->fill($input);
+            $existing->save();
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
     public function attend($input){
         try {
             DB::beginTransaction();
