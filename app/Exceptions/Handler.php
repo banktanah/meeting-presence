@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Models\Dto\ApiResponse;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -50,6 +51,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+        if($exception instanceof ApiException){
+            return response()->json(new ApiResponse(null, $exception->getCode(), $exception->getMessage()));
+        } 
+
         return parent::render($request, $exception);
     }
 }

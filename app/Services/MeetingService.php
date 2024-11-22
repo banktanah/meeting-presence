@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApiException;
 use App\Models\Meeting;
 use App\Models\MeetingMember;
 use App\Models\Monitor\ContactPerson as ContactPersonModel;
@@ -54,7 +55,7 @@ class MeetingService
                 ->first();
 
             // if(!empty($overlap_meeting)){
-            //     throw new \Exception("Meeting within the specified schedule is already exists");
+            //     throw new ApiException("Meeting within the specified schedule is already exists");
             // }
 
             $input['meeting_id'] = $this->generateMeetingId();
@@ -117,7 +118,7 @@ class MeetingService
                 ->first();
 
             if(empty($meeting)){
-                throw new \Exception("Meeting with the specified id does not exists");
+                throw new ApiException("Meeting with the specified id does not exists");
             }
 
             $meeting->fill($input);
@@ -201,14 +202,14 @@ class MeetingService
                 }else if(!empty($input['email'])){
                     $queryable = $queryable->where('email', $input['email']);
                 }else{
-                    throw new \Exception("No proper identification fields given for signing attendance", 1);
+                    throw new ApiException("No proper identification fields given for signing attendance", 1);
                 }
             }
 
             $mm = $queryable->first();
 
             if(empty($mm)){
-                throw new \Exception("Member with the specified id does not exists");
+                throw new ApiException("Member with the specified id does not exists");
             }
 
             $input['attend_at'] = Carbon::now();
