@@ -2,6 +2,7 @@
 
 namespace App\Http\Apis;
 
+use App\Exceptions\ApiException;
 use App\Models\Dto\ApiResponse;
 use App\Services\MeetingService;
 use Illuminate\Routing\Controller as BaseController;
@@ -47,6 +48,14 @@ class MeetingApi extends BaseController
         $json = request()->json()->all();
 
         $this->meetingService->add($json);
+
+        return response()->json(new ApiResponse());
+    }
+
+    public function update(){
+        $json = request()->json()->all();
+
+        $this->meetingService->update($json);
 
         return response()->json(new ApiResponse());
     }
