@@ -60,6 +60,10 @@ class MeetingService
             $input['meeting_id'] = $this->generateMeetingId();
             $input['code'] = $this->generateMeetingCode();
 
+            if(empty($input['meeting_type_id'])){
+                $input['meeting_type_id'] = 1;
+            }
+
             $newMeeting = new Meeting();
             $newMeeting->fill($input);
             $newMeeting->save();

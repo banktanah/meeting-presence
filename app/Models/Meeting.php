@@ -30,7 +30,8 @@ class Meeting extends Model
         'scheduled_finish', 
         'started_at', 
         'finished_at',
-        'meeting_type_id'
+        'meeting_type_id',
+        'code'
     ];
 
     /**
