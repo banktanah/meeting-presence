@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ApiException;
 use App\Models\Meeting;
+use App\Models\MeetingDocument;
 use App\Models\MeetingMember;
 use App\Models\Monitor\ContactPerson as ContactPersonModel;
 use App\Models\Monitor\Person;
@@ -238,6 +239,37 @@ class MeetingService
 
             $mm->fill($input);
             $mm->save();
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function addDocument($input){
+        try {
+            DB::beginTransaction();
+
+            $rs_docs = MeetingDocument::where('meeting_id', $input['meeting_id'])->get();
+
+            $data = null;
+            foreach($rs_docs as $doc){
+                if($doc->filename == $input['filename']){
+                    $data = $doc;
+                    break;
+                }
+            }
+
+            if(!empty($data)){
+                $data->extension = $input['extension'];
+                $data->base64data = $input['base64data'];
+            }else{
+                $data = new MeetingDocument();
+                $data->fill($input);
+            }
+
+            $data->save();
 
             DB::commit();
         } catch (\Throwable $e) {
