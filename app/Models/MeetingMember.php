@@ -33,7 +33,8 @@ class MeetingMember extends Model
         'instansi',
         'jabatan',
         'phone',
-        'email'
+        'email',
+        'is_deleted'
     ];
 
     /**

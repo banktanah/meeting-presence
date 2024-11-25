@@ -18,7 +18,12 @@ class MeetingService
     }
 
     public function list(){
-        $rs = Meeting::get();
+        $rs = Meeting::
+            where('is_deleted', 0)
+            ->with(['members' => function ($q) {
+                $q->where('is_deleted', 0); 
+            }])
+            ->get();
 
         return $rs;
     }
@@ -29,6 +34,9 @@ class MeetingService
                 $q->where('meeting_id', $meeting_id_or_code);
                 $q->orWhere('code', $meeting_id_or_code);
             })
+            ->with(['members' => function ($q) {
+                $q->where('is_deleted', 0); 
+            }])
             ->first();
 
         return $rs;
@@ -133,7 +141,9 @@ class MeetingService
     }
 
     public function listMember(string $meeting_id){
-        $rs = MeetingMember::where('meeting_id', $meeting_id)
+        $rs = MeetingMember::
+            where('meeting_id', $meeting_id)
+            ->where('is_deleted', 0)
             ->get();
 
         return $rs;

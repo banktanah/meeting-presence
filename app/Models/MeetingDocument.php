@@ -24,7 +24,8 @@ class MeetingDocument extends Model
         'meeting_id',
         'filename', 
         'extension', 
-        'base64data'
+        'base64data',
+        'is_deleted'
     ];
 
     /**

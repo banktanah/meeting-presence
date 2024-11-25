@@ -68,6 +68,15 @@ class MeetingApi extends BaseController
         return response()->json(new ApiResponse());
     }
 
+    public function delete(){
+        $json = request()->json()->all();
+
+        $json['is_deleted'] = 1;
+        $this->meetingService->update($json);
+
+        return response()->json(new ApiResponse());
+    }
+
     public function get_file(string $code){
         $tmp = base64_decode($code);
         $fileinfo = json_decode(base64_decode($code));

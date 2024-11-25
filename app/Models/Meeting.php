@@ -31,7 +31,8 @@ class Meeting extends Model
         'started_at', 
         'finished_at',
         'meeting_type_id',
-        'code'
+        'code',
+        'is_deleted'
     ];
 
     /**
