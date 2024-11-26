@@ -23,6 +23,7 @@ class MeetingService
             ->with(['members' => function ($q) {
                 $q->where('is_deleted', 0); 
             }])
+            ->orderBy('created_at', 'DESC')
             ->get();
 
         return $rs;
@@ -144,6 +145,7 @@ class MeetingService
         $rs = MeetingMember::
             where('meeting_id', $meeting_id)
             ->where('is_deleted', 0)
+            ->orderBy('created_at', 'DESC')
             ->get();
 
         return $rs;
