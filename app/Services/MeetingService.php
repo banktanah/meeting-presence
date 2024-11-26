@@ -148,6 +148,8 @@ class MeetingService
             ->orderBy('created_at', 'DESC')
             ->get();
 
+        $rs->makeVisible(['digital_signature', 'photo']);
+
         return $rs;
     }
 
