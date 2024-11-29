@@ -141,9 +141,15 @@ class MeetingService
         }
     }
 
-    public function listMember(string $meeting_id){
+    public function listMember(string $meeting_id_or_code){
+        $meeting = $this->get($meeting_id_or_code);
+
+        if(empty($meeting)){
+            throw new ApiException("Meeting with the specified id or code does not exists");
+        }
+
         $rs = MeetingMember::
-            where('meeting_id', $meeting_id)
+            where('meeting_id', $meeting->meeting_id)
             ->where('is_deleted', 0)
             ->orderBy('created_at', 'DESC')
             ->get();

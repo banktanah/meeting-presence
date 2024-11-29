@@ -30,7 +30,7 @@ Route::group(['prefix' => '/master'], function() {
 Route::group(['prefix' => '/meeting'], function() {
     Route::get('/list', [MeetingApi::class, 'list']);
     Route::get('/get/{meeting_id_or_code}', [MeetingApi::class, 'get']);
-    Route::get('/members/{meeting_id}', [MeetingApi::class, 'members']);
+    Route::get('/members/{meeting_id_or_code}', [MeetingApi::class, 'members']);
     Route::post('/presence', [MeetingApi::class, 'presence']);
     Route::post('/add', [MeetingApi::class, 'add']);
     Route::post('/update', [MeetingApi::class, 'update']);
