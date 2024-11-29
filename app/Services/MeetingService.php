@@ -39,6 +39,8 @@ class MeetingService
                 $q->where('is_deleted', 0); 
             }])
             ->first();
+            
+        $rs->makeVisible(['docs']);
 
         return $rs;
     }
