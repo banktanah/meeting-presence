@@ -38,9 +38,10 @@ class MeetingService
             ->with(['members' => function ($q) {
                 $q->where('is_deleted', 0); 
             }])
+            ->with(['docs' => function ($q) {
+                $q->where('is_deleted', 0); 
+            }])
             ->first();
-            
-        $rs->makeVisible(['docs']);
 
         return $rs;
     }
