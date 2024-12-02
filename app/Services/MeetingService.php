@@ -37,7 +37,7 @@ class MeetingService
             })
             ->with(['members' => function ($q) {
                 $q->where('is_deleted', 0); 
-                $q->orderBy('name', 'ASC');
+                $q->orderBy('created_at', 'DESC');
             }])
             ->with(['docs' => function ($q) {
                 $q->where('is_deleted', 0); 
