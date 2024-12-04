@@ -36,6 +36,8 @@ Route::group(['prefix' => '/meeting'], function() {
     Route::post('/update', [MeetingApi::class, 'update']);
     Route::post('/add-document', [MeetingApi::class, 'add_document']);
     Route::post('/delete', [MeetingApi::class, 'delete']);
+    Route::post('/register-face', [MeetingApi::class, 'register_face']);
+    Route::get('/get-faces/{meeting_id_or_code}', [MeetingApi::class, 'get_faces']);
 });
 
 Route::group(['prefix' => '/meeting-member'], function() {

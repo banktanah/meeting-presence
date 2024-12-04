@@ -229,4 +229,7 @@ return [
 
     ],
 
+    'api_endpoint' => [
+        'biometric' => env('API_BIOMETRIC_ENDPOINT', 'http://localhost/biometric'),
+    ]
 ];

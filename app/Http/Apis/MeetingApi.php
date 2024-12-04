@@ -44,6 +44,59 @@ class MeetingApi extends BaseController
         return response()->json(new ApiResponse());
     }
 
+    public function register_face(){
+        $json = request()->json()->all();
+
+        $endpoint = config('app.api_endpoint.biometric');
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post(
+            "$endpoint/api/face/enroll.php",
+            [
+                'json' => [
+                    'person_id' => $json['person_id'],
+                    'id_type' => $json['id_type'],
+                    'encoding' => $json['encoding']
+                ]
+            ],
+            ['Content-Type' => 'application/json']
+        );
+
+        $responseJSON = json_decode($response->getBody(), true);
+
+        return response()->json(new ApiResponse());
+    }
+
+    public function get_faces(string $meeting_id_or_code){
+        $res = $this->meetingService->listMember($meeting_id_or_code);
+
+        $ids = [];
+        foreach($res as $row){
+            if(!empty($row->id_number)){
+                $ids []= $row->id_number;
+            }
+        }
+        
+        $result = null;
+        if(!empty($ids)){
+            $endpoint = config('app.api_endpoint.biometric');
+            $client = new \GuzzleHttp\Client();
+            $response = $client->post(
+                "$endpoint/api/face/list.php",
+                [
+                    'json' => [
+                        'person_ids' => $ids
+                    ]
+                ],
+                ['Content-Type' => 'application/json']
+            );
+
+            $jsonResult = json_decode($response->getBody());
+            $result = $jsonResult->data;
+        }
+
+        return response()->json(new ApiResponse($result));
+    }
+
     public function add(){
         $json = request()->json()->all();
 
