@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Apis\FaceApi;
 use App\Http\Apis\MasterApi;
 use App\Http\Apis\MeetingApi;
 use App\Http\Apis\MeetingMemberApi;
@@ -46,3 +47,5 @@ Route::group(['prefix' => '/meeting-member'], function() {
     Route::post('/update', [MeetingMemberApi::class, 'update']);
     Route::post('/delete', [MeetingMemberApi::class, 'delete']);
 });
+
+Route::get('/face/listpegawai', [FaceApi::class, 'listPegawai']);
