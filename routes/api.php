@@ -48,4 +48,7 @@ Route::group(['prefix' => '/meeting-member'], function() {
     Route::post('/delete', [MeetingMemberApi::class, 'delete']);
 });
 
-Route::get('/face/listpegawai', [FaceApi::class, 'listPegawai']);
+Route::group(['prefix' => '/face'], function() {
+    Route::get('/listpegawai', [FaceApi::class, 'listPegawai']);
+    Route::post('/get-base64-photos', [FaceApi::class, 'get_base64_photos']);
+});

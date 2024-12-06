@@ -51,4 +51,24 @@ class FaceApi extends BaseController
 
         return response()->json(new ApiResponse($result));
     }
+
+    public function get_base64_photos(){
+        $json = request()->json()->all();
+
+        $endpoint = config('app.api_endpoint.esdm');
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post(
+            "$endpoint/Karyawan/get_photos_base64",
+            [
+                'json' => [
+                    'nips' => $json['ids']
+                ]
+            ],
+            ['Content-Type' => 'application/json']
+        );
+
+        $jsonResult = json_decode($response->getBody());
+
+        return response()->json(new ApiResponse($jsonResult->data));
+    }
 }

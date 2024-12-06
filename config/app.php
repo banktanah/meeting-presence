@@ -231,6 +231,7 @@ return [
 
     'api_endpoint' => [
         'biometric' => env('API_BIOMETRIC_ENDPOINT', 'http://localhost/biometric'),
-        'dashboard' => env('API_DASHBOARD_ENDPOINT', 'http://localhost/dashboard')
+        'dashboard' => env('API_DASHBOARD_ENDPOINT', 'http://localhost/dashboard'),
+        'esdm' => env('API_ESDM_ENDPOINT', 'http://localhost/')
     ]
 ];
