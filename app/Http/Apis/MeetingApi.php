@@ -36,8 +36,24 @@ class MeetingApi extends BaseController
     }
 
     public function presence(){
-        $params = request()->input();
         $json = request()->json()->all();
+
+        if(!empty($json['face_encoding'])){
+            $nip = null;
+            if(!empty($json['meeting_member_id'])){
+                $member = $this->meetingService->getMemberDetail($json['meeting_member_id']);
+                if(empty($member->id_number)){
+                    throw new \Exception("The user does not have an \"id_number\" while trying to save \"face_encoding\"", 1);
+                }
+                $nip = $member->id_number;
+            }else if(!empty($json['nip'])){
+                $nip = $json['nip'];
+            }else{
+                throw new \Exception("\"meeting_member_id\" or \"nip\" must be set to save \"face_encoding\"", 1);
+            }
+
+            $this->enroll_face($nip, 'NIP', $json['face_encoding']);
+        }
 
         $this->meetingService->attend($json);
 
@@ -47,23 +63,29 @@ class MeetingApi extends BaseController
     public function register_face(){
         $json = request()->json()->all();
 
+        $this->enroll_face($json['person_id'], $json['id_type'], $json['encoding']);
+
+        return response()->json(new ApiResponse());
+    }
+
+    private function enroll_face($person_id, $id_type, $encoding){
         $endpoint = config('app.api_endpoint.biometric');
         $client = new \GuzzleHttp\Client();
         $response = $client->post(
             "$endpoint/api/face/enroll.php",
             [
                 'json' => [
-                    'person_id' => $json['person_id'],
-                    'id_type' => $json['id_type'],
-                    'encoding' => $json['encoding']
+                    'person_id' => $person_id,
+                    'id_type' => $id_type,
+                    'encoding' => $encoding
                 ]
             ],
             ['Content-Type' => 'application/json']
         );
 
-        $responseJSON = json_decode($response->getBody(), true);
+        $responseJSON = json_decode($response->getBody());
 
-        return response()->json(new ApiResponse());
+        return $responseJSON;
     }
 
     public function get_faces(string $meeting_id_or_code){
