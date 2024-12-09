@@ -188,16 +188,18 @@ class MeetingService
                     }
                     
                     $row['meeting_id'] = $meeting_id;
+                    $meeting_member_id = null;
                     if(empty($existing)){
                         $newMember = new MeetingMember();
                         $newMember->fill($row);
                         $newMember->save();
-                        $row['member_meeting_id'] = $newMember->member_meeting_id;
+                        $meeting_member_id = $newMember->meeting_member_id;
                         $row['status'] = 'success';
                     }else{
-                        $row['member_meeting_id'] = $existing->member_meeting_id;
+                        $meeting_member_id = $existing->meeting_member_id;
                         $row['status'] = 'already_exist';
                     }
+                    $row['meeting_member_id'] = $meeting_member_id;
 
                     $results []= $row;
                 }
