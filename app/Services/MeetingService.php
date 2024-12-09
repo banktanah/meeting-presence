@@ -192,8 +192,10 @@ class MeetingService
                         $newMember = new MeetingMember();
                         $newMember->fill($row);
                         $newMember->save();
+                        $row['member_meeting_id'] = $newMember->member_meeting_id;
                         $row['status'] = 'success';
                     }else{
+                        $row['member_meeting_id'] = $existing->member_meeting_id;
                         $row['status'] = 'already_exist';
                     }
 
