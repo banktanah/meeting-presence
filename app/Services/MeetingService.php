@@ -179,10 +179,13 @@ class MeetingService
             $results = [];
             if(!empty($members)){
                 foreach($members as $row){
-                    $existing = MeetingMember::
-                        where('meeting_id', $meeting_id)
-                        ->where('id_number', $row['id_number'])
-                        ->first();
+                    $existing = null;
+                    if(!empty($row['id_number'])){
+                        $existing = MeetingMember::
+                            where('meeting_id', $meeting_id)
+                            ->where('id_number', $row['id_number'])
+                            ->first();
+                    }
                     
                     $row['meeting_id'] = $meeting_id;
                     if(empty($existing)){
