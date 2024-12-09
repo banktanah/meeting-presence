@@ -119,6 +119,25 @@ class MeetingApi extends BaseController
         return response()->json(new ApiResponse($result));
     }
 
+    public function get_all_faces(){
+        $endpoint = config('app.api_endpoint.biometric');
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post(
+            "$endpoint/api/face/list.php",
+            [
+                'json' => [
+                    'person_ids' => []
+                ]
+            ],
+            ['Content-Type' => 'application/json']
+        );
+
+        $jsonResult = json_decode($response->getBody());
+        $result = $jsonResult->data;
+
+        return response()->json(new ApiResponse($result));
+    }
+
     public function add(){
         $json = request()->json()->all();
 
