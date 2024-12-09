@@ -179,12 +179,22 @@ class MeetingService
             $results = [];
             if(!empty($members)){
                 foreach($members as $row){
+                    $existing = MeetingMember::
+                        where('meeting_id', $meeting_id)
+                        ->where('id_number', $row['id_number'])
+                        ->first();
+                    
                     $row['meeting_id'] = $meeting_id;
-                    $newMember = new MeetingMember();
-                    $newMember->fill($row);
-                    $newMember->save();
+                    if(empty($existing)){
+                        $newMember = new MeetingMember();
+                        $newMember->fill($row);
+                        $newMember->save();
+                        $row['status'] = 'success';
+                    }else{
+                        $row['status'] = 'already_exist';
+                    }
 
-                    $results []= $newMember;
+                    $results []= $row;
                 }
             }
 
