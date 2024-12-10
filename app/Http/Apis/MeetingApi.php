@@ -102,23 +102,20 @@ class MeetingApi extends BaseController
             }
         }
         
-        $result = null;
-        if(!empty($ids)){
-            $endpoint = config('app.api_endpoint.biometric');
-            $client = new \GuzzleHttp\Client();
-            $response = $client->post(
-                "$endpoint/api/face/list.php",
-                [
-                    'json' => [
-                        'person_ids' => $ids
-                    ]
-                ],
-                ['Content-Type' => 'application/json']
-            );
+        $endpoint = config('app.api_endpoint.biometric');
+        $client = new \GuzzleHttp\Client();
+        $response = $client->post(
+            "$endpoint/api/face/list.php",
+            [
+                'json' => [
+                    'person_ids' => $ids
+                ]
+            ],
+            ['Content-Type' => 'application/json']
+        );
 
-            $jsonResult = json_decode($response->getBody());
-            $result = $jsonResult->data;
-        }
+        $jsonResult = json_decode($response->getBody());
+        $result = $jsonResult->data;
 
         return response()->json(new ApiResponse($result));
     }
