@@ -88,13 +88,17 @@ class MeetingApi extends BaseController
         return $responseJSON;
     }
 
-    public function get_faces(string $meeting_id_or_code){
-        $res = $this->meetingService->listMember($meeting_id_or_code);
+    public function get_faces(){
+        $json = request()->json()->all();
 
         $ids = [];
-        foreach($res as $row){
-            if(!empty($row->id_number)){
-                $ids []= $row->id_number;
+        if(!empty($json) && !empty($json['meeting_id'])){
+            $res = $this->meetingService->listMember($json['meeting_id']);
+    
+            foreach($res as $row){
+                if(!empty($row->id_number)){
+                    $ids []= $row->id_number;
+                }
             }
         }
         
