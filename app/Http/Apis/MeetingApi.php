@@ -38,6 +38,10 @@ class MeetingApi extends BaseController
     public function presence(){
         $json = request()->json()->all();
 
+        if(empty($json['digital_signature']) && empty($json['photo'])){
+            return response()->json(new ApiResponse(1, 'Tandatangan atau Foto harus diisi'));
+        }
+
         if(!empty($json['face_encoding'])){
             $nip = null;
             if(!empty($json['meeting_member_id'])){
