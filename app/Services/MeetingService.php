@@ -301,8 +301,8 @@ class MeetingService
                     $data = null;
                     if($doc->filename == $file['filename']){
                         $data = MeetingDocument::where('meeting_docs_id', $doc->meeting_docs_id)->first();
-                        $data->extension = $input['extension'];
-                        $data->base64data = $input['base64data'];
+                        $data->extension = $file['extension'];
+                        $data->base64data = $file['base64data'];
                         $data->save();
                         $existing = true;
                         break;
@@ -311,7 +311,7 @@ class MeetingService
 
                 if(!$existing){
                     $data = new MeetingDocument();
-                    $data->meeting_id = $input['meeting_id'];
+                    $data->meeting_id = $file['meeting_id'];
                     $data->fill($file);
                     $data->save();
                 }
