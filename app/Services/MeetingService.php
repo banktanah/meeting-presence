@@ -311,7 +311,7 @@ class MeetingService
 
                 if(!$existing){
                     $data = new MeetingDocument();
-                    $data->meeting_id = $file['meeting_id'];
+                    $data->meeting_id = $input['meeting_id'];
                     $data->fill($file);
                     $data->save();
                 }
