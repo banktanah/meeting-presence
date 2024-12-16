@@ -292,25 +292,30 @@ class MeetingService
         try {
             DB::beginTransaction();
 
+            $file_inputs = $input['files'];
             $rs_docs = MeetingDocument::where('meeting_id', $input['meeting_id'])->get();
 
-            $data = null;
-            foreach($rs_docs as $doc){
-                if($doc->filename == $input['filename']){
-                    $data = $doc;
-                    break;
+            foreach($file_inputs as $file){
+                $existing = false;
+                foreach($rs_docs as $doc){
+                    $data = null;
+                    if($doc->filename == $file['filename']){
+                        $data = MeetingDocument::where('meeting_docs_id', $doc->meeting_docs_id)->first();
+                        $data->extension = $input['extension'];
+                        $data->base64data = $input['base64data'];
+                        $data->save();
+                        $existing = true;
+                        break;
+                    }
+                }
+
+                if(!$existing){
+                    $data = new MeetingDocument();
+                    $data->meeting_id = $input['meeting_id'];
+                    $data->fill($file);
+                    $data->save();
                 }
             }
-
-            if(!empty($data)){
-                $data->extension = $input['extension'];
-                $data->base64data = $input['base64data'];
-            }else{
-                $data = new MeetingDocument();
-                $data->fill($input);
-            }
-
-            $data->save();
 
             DB::commit();
         } catch (\Throwable $e) {
