@@ -19,7 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://alina.banktanah.id'],
+    'allowed_origins' => [
+        'http://localhost:9393',
+        'http://127.0.0.1:9393',
+        'https://alina.banktanah.id',
+    ],
 
     'allowed_origins_patterns' => [],
 
