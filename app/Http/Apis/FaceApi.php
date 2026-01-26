@@ -15,7 +15,7 @@ class FaceApi extends BaseController
         $endpoint = config('app.api_endpoint.dashboard');
         $client = new \GuzzleHttp\Client();
         $response = $client->get(
-            "$endpoint/services/apps/mawas/listpegawai",
+            "$endpoint/dashboard/services/apps/mawas/listpegawai",
             ['Content-Type' => 'application/json']
         );
 
@@ -77,7 +77,7 @@ class FaceApi extends BaseController
             $endpoint = config('app.api_endpoint.dashboard');
             $client = new \GuzzleHttp\Client(['timeout' => 30]);
             $response = $client->get(
-                "$endpoint/services/apps/mawas/listpegawai",
+                "$endpoint/dashboard/services/apps/mawas/listpegawai",
                 ['Content-Type' => 'application/json']
             );
 
