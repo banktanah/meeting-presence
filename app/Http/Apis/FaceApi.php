@@ -71,4 +71,20 @@ class FaceApi extends BaseController
 
         return response()->json(new ApiResponse($jsonResult->data));
     }
+    
+    public function listPegawaiMawas(){
+        try {
+            $endpoint = config('app.api_endpoint.dashboard');
+            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $response = $client->get(
+                "$endpoint/services/apps/mawas/listpegawai",
+                ['Content-Type' => 'application/json']
+            );
+
+            $pegawaiList = json_decode($response->getBody(), true);
+            return response()->json($pegawaiList);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch data: ' . $e->getMessage()], 500);
+        }
+    }
 }
