@@ -12,44 +12,55 @@ class FaceApi extends BaseController
     }
 
     public function listPegawai(){
-        $endpoint = config('app.api_endpoint.dashboard');
-        $client = new \GuzzleHttp\Client();
-        $response = $client->get(
-            "$endpoint/dashboard/services/apps/mawas/listpegawai",
-            ['Content-Type' => 'application/json']
-        );
+        try {
+            // Fetch pegawai list from dashboard
+            $dashboardEndpoint = config('app.api_endpoint.dashboard');
+            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $response = $client->get(
+                "$dashboardEndpoint/dashboard/services/apps/mawas/listpegawai",
+                ['Content-Type' => 'application/json']
+            );
 
-        $pegawaiList = json_decode($response->getBody());
+            $pegawaiList = json_decode($response->getBody());
 
-        $endpoint = config('app.api_endpoint.biometric');
-        $client = new \GuzzleHttp\Client();
-        $response = $client->post(
-            "$endpoint/api/face/list.php",
-            [
-                'json' => [
-                    'person_ids' => []
-                ]
-            ],
-            ['Content-Type' => 'application/json']
-        );
+            // Fetch face list from biometric
+            $biometricEndpoint = config('app.api_endpoint.biometric');
+            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $response = $client->post(
+                "$biometricEndpoint/api/face/list.php",
+                [
+                    'json' => [
+                        'person_ids' => []
+                    ]
+                ],
+                ['Content-Type' => 'application/json']
+            );
 
-        $jsonResult = json_decode($response->getBody());
-        $faceList = $jsonResult->data;
-        $faceExistIds = [];
-        foreach($faceList as $row){
-            $faceExistIds []= $row->person_id;
+            $jsonResult = json_decode($response->getBody());
+            $faceList = $jsonResult->data ?? [];
+            $faceExistIds = [];
+            foreach($faceList as $row){
+                $faceExistIds []= $row->person_id;
+            }
+
+            $result = [];
+            foreach($pegawaiList as $row){
+                $result []= [
+                    'nip' => $row->nip,
+                    'nama' => $row->nama,
+                    'face_registered' => in_array($row->nip, $faceExistIds)
+                ];
+            }
+
+            return response()->json(new ApiResponse($result));
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            return response()->json(['error' => 'Tidak dapat terhubung ke server: ' . $e->getMessage()], 503);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $statusCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 500;
+            return response()->json(['error' => 'Request gagal: ' . $e->getMessage()], $statusCode);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
-
-        $result = [];
-        foreach($pegawaiList as $row){
-            $result []= [
-                'nip' => $row->nip,
-                'nama' => $row->nama,
-                'face_registered' => in_array($row->nip, $faceExistIds)
-            ];
-        }
-
-        return response()->json(new ApiResponse($result));
     }
 
     public function get_base64_photos(){
@@ -75,16 +86,32 @@ class FaceApi extends BaseController
     public function listPegawaiMawas(){
         try {
             $endpoint = config('app.api_endpoint.dashboard');
+            $url = "$endpoint/dashboard/services/apps/mawas/listpegawai";
+            
             $client = new \GuzzleHttp\Client(['timeout' => 30]);
-            $response = $client->get(
-                "$endpoint/dashboard/services/apps/mawas/listpegawai",
-                ['Content-Type' => 'application/json']
-            );
+            $response = $client->get($url, ['Content-Type' => 'application/json']);
 
             $pegawaiList = json_decode($response->getBody(), true);
             return response()->json($pegawaiList);
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+            return response()->json([
+                'error' => 'Tidak dapat terhubung ke server dashboard',
+                'detail' => $e->getMessage()
+            ], 503);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $statusCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 500;
+            $responseBody = $e->hasResponse() ? (string) $e->getResponse()->getBody() : null;
+            return response()->json([
+                'error' => 'Request ke dashboard gagal',
+                'status' => $statusCode,
+                'detail' => $e->getMessage(),
+                'response' => $responseBody
+            ], $statusCode);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch data: ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Terjadi kesalahan',
+                'detail' => $e->getMessage()
+            ], 500);
         }
     }
 }
