@@ -88,6 +88,9 @@ class FaceApi extends BaseController
             $endpoint = config('app.api_endpoint.dashboard');
             $url = "$endpoint/dashboard/services/apps/mawas/listpegawai";
             
+            // Debug: log the endpoint being used
+            \Log::info('Fetching from dashboard', ['endpoint' => $endpoint, 'url' => $url]);
+            
             $client = new \GuzzleHttp\Client(['timeout' => 30]);
             $response = $client->get($url, ['Content-Type' => 'application/json']);
 
