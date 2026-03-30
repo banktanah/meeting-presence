@@ -7,6 +7,7 @@ use App\Http\Apis\MeetingMemberApi;
 use App\Models\MeetingMember;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,8 +57,16 @@ Route::group(['prefix' => '/face'], function() {
 Route::get('/listpegawai', [FaceApi::class, 'listPegawaiMawas']);
 
 Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $db = 'ok';
+    } catch (\Exception $e) {
+        $db = 'error';
+    }
+
     return response()->json([
         'status' => 'ok',
+        'db' => $db,
         'service' => 'Alina-Service',
         'timestamp' => now()
     ]);
