@@ -54,3 +54,11 @@ Route::group(['prefix' => '/face'], function() {
 });
 
 Route::get('/listpegawai', [FaceApi::class, 'listPegawaiMawas']);
+
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'service' => 'Alina-Service',
+        'timestamp' => now()
+    ]);
+});
