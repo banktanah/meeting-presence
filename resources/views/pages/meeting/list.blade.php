@@ -197,7 +197,7 @@
                                         <td>${no++}</td>
                                         <td>${a.name}</td>
                                         <td>${Utils.simpleDateFormat(new Date(a.scheduled_start), true)}</td>
-                                        <td>${a.members.filter(b => b.attend_at != null).length+'/'+a.members.length}</td>
+                                        <td>${(a.attended_members_count ?? 0)+'/'+(a.members_count ?? 0)}</td>
                                         <td>${a.location}</td>
                                         <td>
                                             <a href="#" onclick="meetingSetting('${a.meeting_id}');" class="ml-2"><i class="fas fa-gear" data-bs-toggle="modal" data-bs-target="#modal_meeting_setting"></i></a>
@@ -218,7 +218,6 @@
         function meetingAdd(){
             let modal = $('#modal_meeting_setting');
             
-            let meetingData = meetings.find(a => meeting_id = meeting_id);
             modal.find('.modal-title').html(`Add new meeting`);
 
             modal.find('#btn_save_setting').attr('data-meeting-id', '');
@@ -227,7 +226,7 @@
         function meetingSetting(meeting_id){
             let modal = $('#modal_meeting_setting');
             
-            let meetingData = meetings.find(a => meeting_id = meeting_id);
+            let meetingData = meetings.find(a => a.meeting_id == meeting_id);
             modal.find('.modal-title').html(`Setting - ${meetingData?.name}`);
 
             modal.find('#btn_save_setting').attr('data-meeting-id', meeting_id);
@@ -236,26 +235,32 @@
         function meetingViewMember(meeting_id){
             let modal = $('#modal_meeting_member');
 
-            let meetingData = meetings.find(a => meeting_id = meeting_id);
+            let meetingData = meetings.find(a => a.meeting_id == meeting_id);
             modal.find('.modal-title').html(`Member - ${meetingData?.name}`);
 
             let tableMember = modal.find('#table-meeting-member').find('#data-body');
             tableMember.html('');
 
-            if(meetingData?.members.length > 0){
-                let no = 1;
-                meetingData.members.forEach(a => {
-                    tableMember.append(`
-                        <tr>
-                            <td>${no++}</td>
-                            <td>${a.name}</td>
-                            <td>${a.attend_at? 'Hadir': 'Belum/Tidak Hadir'}</td>
-                        </tr>
-                    `);
-                });
+            $.ajax({
+                url: `${baseUrl}/api/meeting/members/${meeting_id}`,
+                type: "get",
+                success: (res) => {
+                    if(res.code == 0 && res.data?.length > 0){
+                        let no = 1;
+                        res.data.forEach(a => {
+                            tableMember.append(`
+                                <tr>
+                                    <td>${no++}</td>
+                                    <td>${a.name}</td>
+                                    <td>${a.attend_at? 'Hadir': 'Belum/Tidak Hadir'}</td>
+                                </tr>
+                            `);
+                        });
 
-                new DataTable('#table-meeting-member');
-            }
+                        new DataTable('#table-meeting-member');
+                    }
+                }
+            });
         }
 
         function saveMeetingSetting(){

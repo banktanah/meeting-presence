@@ -57,7 +57,7 @@ class Meeting extends Model
         'finished_at' => 'datetime',
     ];
 
-    protected $with = ['meeting_type', 'members'];
+    protected $with = ['meeting_type'];
 
     public function meeting_type(){
         return $this->belongsTo(MeetingType::class, 'meeting_type_id', 'meeting_type_id');

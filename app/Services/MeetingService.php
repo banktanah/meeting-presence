@@ -18,11 +18,31 @@ class MeetingService
     }
 
     public function list(){
-        $rs = Meeting::
-            where('is_deleted', 0)
-            ->with(['members' => function ($q) {
-                $q->where('is_deleted', 0); 
-            }])
+        $rs = Meeting::query()
+            ->select([
+                'meeting_id',
+                'name',
+                'description',
+                'location',
+                'scheduled_start',
+                'scheduled_finish',
+                'started_at',
+                'finished_at',
+                'meeting_type_id',
+                'code',
+                'created_at',
+                'updated_at',
+            ])
+            ->where('is_deleted', 0)
+            ->withCount([
+                'members as members_count' => function ($q) {
+                    $q->where('is_deleted', 0);
+                },
+                'members as attended_members_count' => function ($q) {
+                    $q->where('is_deleted', 0);
+                    $q->whereNotNull('attend_at');
+                },
+            ])
             ->orderBy('created_at', 'DESC')
             ->get();
 
@@ -146,14 +166,21 @@ class MeetingService
     }
 
     public function listMember(string $meeting_id_or_code){
-        $meeting = $this->get($meeting_id_or_code);
+        $meeting = Meeting::query()
+            ->select('meeting_id')
+            ->where(function($q) use ($meeting_id_or_code){
+                $q->where('meeting_id', $meeting_id_or_code);
+                $q->orWhere('code', $meeting_id_or_code);
+            })
+            ->where('is_deleted', 0)
+            ->first();
 
         if(empty($meeting)){
             throw new ApiException("Meeting with the specified id or code does not exists");
         }
 
-        $rs = MeetingMember::
-            where('meeting_id', $meeting->meeting_id)
+        $rs = MeetingMember::query()
+            ->where('meeting_id', $meeting->meeting_id)
             ->where('is_deleted', 0)
             ->orderBy('created_at', 'DESC')
             ->get();
