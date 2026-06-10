@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\ApiException;
 use App\Models\Meeting;
 use App\Models\MeetingDocument;
+use App\Models\ExternalParticipant;
 use App\Models\MeetingMember;
 use App\Models\Monitor\ContactPerson as ContactPersonModel;
 use App\Models\Monitor\Person;
@@ -199,6 +200,175 @@ class MeetingService
         return $rs;
     }
 
+    public function searchExternalParticipants(string $keyword)
+    {
+        $keyword = trim($keyword);
+        if(strlen($keyword) < 2){
+            return [];
+        }
+
+        $normalizedKeyword = $this->normalizeExternalValue($keyword);
+        $phoneKeyword = $this->normalizePhone($keyword);
+
+        return ExternalParticipant::query()
+            ->select([
+                'external_participant_id',
+                'name',
+                'instansi',
+                'jabatan',
+                'phone',
+                'email',
+                'last_seen_at',
+            ])
+            ->where('is_deleted', 0)
+            ->where(function($query) use ($keyword, $normalizedKeyword, $phoneKeyword) {
+                $query->where('normalized_name', 'like', "%$normalizedKeyword%");
+                $query->orWhere('instansi', 'like', "%$keyword%");
+                $query->orWhere('jabatan', 'like', "%$keyword%");
+                $query->orWhere('email', 'like', "%$keyword%");
+
+                if(!empty($phoneKeyword)){
+                    $query->orWhere('phone', 'like', "%$phoneKeyword%");
+                }
+            })
+            ->orderBy('last_seen_at', 'DESC')
+            ->orderBy('updated_at', 'DESC')
+            ->limit(10)
+            ->get();
+    }
+
+    private function sanitizeMemberInput(array $row)
+    {
+        foreach(['id_number', 'name', 'instansi', 'jabatan', 'phone', 'email'] as $field){
+            if(array_key_exists($field, $row) && is_string($row[$field])){
+                $row[$field] = trim($row[$field]);
+            }
+        }
+
+        if(!empty($row['external_participant_id'])){
+            $row['external_participant_id'] = intval($row['external_participant_id']);
+        }
+
+        if(!empty($row['phone'])){
+            $row['phone'] = $this->normalizePhone($row['phone']);
+        }
+
+        if(!empty($row['email'])){
+            $row['email'] = strtolower($row['email']);
+        }
+
+        return $row;
+    }
+
+    private function findExistingMeetingMember($meeting_id, array $row)
+    {
+        $query = MeetingMember::query()
+            ->where('meeting_id', $meeting_id)
+            ->where('is_deleted', 0);
+
+        if(!empty($row['id_number'])){
+            return $query->where('id_number', $row['id_number'])->first();
+        }
+
+        if(!empty($row['external_participant_id'])){
+            return $query->where('external_participant_id', $row['external_participant_id'])->first();
+        }
+
+        return $query->where(function($q) use ($row) {
+            if(!empty($row['phone'])){
+                $q->orWhere('phone', $row['phone']);
+            }
+
+            if(!empty($row['email'])){
+                $q->orWhere('email', $row['email']);
+            }
+
+            if(!empty($row['name'])){
+                $q->orWhere(function($q2) use ($row) {
+                    $q2->where('name', $row['name']);
+                    if(!empty($row['instansi'])){
+                        $q2->where('instansi', $row['instansi']);
+                    }
+                });
+            }
+        })->first();
+    }
+
+    private function upsertExternalParticipant(array $row)
+    {
+        if(empty($row['name'])){
+            return null;
+        }
+
+        $participant = null;
+        if(!empty($row['external_participant_id'])){
+            $participant = ExternalParticipant::query()
+                ->where('external_participant_id', $row['external_participant_id'])
+                ->where('is_deleted', 0)
+                ->first();
+        }
+
+        if(empty($participant)){
+            $participant = $this->findExternalParticipant($row);
+        }
+
+        if(empty($participant)){
+            $participant = new ExternalParticipant();
+        }
+
+        $participant->fill([
+            'name' => $row['name'],
+            'normalized_name' => $this->normalizeExternalValue($row['name']),
+            'instansi' => $row['instansi'] ?? null,
+            'jabatan' => $row['jabatan'] ?? null,
+            'phone' => $row['phone'] ?? null,
+            'email' => $row['email'] ?? null,
+            'last_seen_at' => Carbon::now(),
+            'is_deleted' => 0,
+        ]);
+        $participant->save();
+
+        return $participant;
+    }
+
+    private function findExternalParticipant(array $row)
+    {
+        return ExternalParticipant::query()
+            ->where('is_deleted', 0)
+            ->where(function($q) use ($row) {
+                if(!empty($row['phone'])){
+                    $q->orWhere('phone', $row['phone']);
+                }
+
+                if(!empty($row['email'])){
+                    $q->orWhere('email', $row['email']);
+                }
+
+                if(!empty($row['name'])){
+                    $q->orWhere(function($q2) use ($row) {
+                        $q2->where('normalized_name', $this->normalizeExternalValue($row['name']));
+                        if(!empty($row['instansi'])){
+                            $q2->where('instansi', $row['instansi']);
+                        }
+                    });
+                }
+            })
+            ->first();
+    }
+
+    private function normalizeExternalValue($value)
+    {
+        $value = trim((string) $value);
+        $value = preg_replace('/\s+/', ' ', $value);
+
+        return strtoupper($value);
+    }
+
+    private function normalizePhone($value)
+    {
+        return preg_replace('/[^0-9+]/', '', (string) $value);
+    }
+
     public function addMember($meeting_id, $members){
         try {
             DB::beginTransaction();
@@ -206,12 +376,14 @@ class MeetingService
             $results = [];
             if(!empty($members)){
                 foreach($members as $row){
-                    $existing = null;
-                    if(!empty($row['id_number'])){
-                        $existing = MeetingMember::
-                            where('meeting_id', $meeting_id)
-                            ->where('id_number', $row['id_number'])
-                            ->first();
+                    $row = $this->sanitizeMemberInput($row);
+                    $existing = $this->findExistingMeetingMember($meeting_id, $row);
+
+                    if(empty($row['id_number'])){
+                        $participant = $this->upsertExternalParticipant($row);
+                        if(!empty($participant)){
+                            $row['external_participant_id'] = $participant->external_participant_id;
+                        }
                     }
                     
                     $row['meeting_id'] = $meeting_id;
@@ -223,6 +395,8 @@ class MeetingService
                         $meeting_member_id = $newMember->meeting_member_id;
                         $row['status'] = 'success';
                     }else{
+                        $existing->fill($row);
+                        $existing->save();
                         $meeting_member_id = $existing->meeting_member_id;
                         $row['status'] = 'already_exist';
                     }

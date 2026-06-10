@@ -18,6 +18,15 @@ class MeetingMemberApi  extends BaseController
 
     public function add(){
         $json = request()->json()->all();
+
+        if(empty($json['meeting_id'])){
+            return response()->json(new ApiResponse(1, 'meeting_id wajib diisi'), 422);
+        }
+
+        if(empty($json['members']) || !is_array($json['members'])){
+            return response()->json(new ApiResponse(1, 'members wajib berupa array dan minimal berisi satu peserta'), 422);
+        }
+
         $res = $this->meetingService->addMember($json['meeting_id'], $json['members']);
 
         return response()->json(new ApiResponse($res));

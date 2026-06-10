@@ -22,6 +22,7 @@ class MeetingMember extends Model
      */
     protected $fillable = [
         'meeting_id',
+        'external_participant_id',
         'id_number',
         'name', 
         'role',

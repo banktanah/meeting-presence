@@ -4,6 +4,7 @@ use App\Http\Apis\FaceApi;
 use App\Http\Apis\MasterApi;
 use App\Http\Apis\MeetingApi;
 use App\Http\Apis\MeetingMemberApi;
+use App\Http\Apis\ExternalParticipantApi;
 use App\Models\MeetingMember;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,10 @@ Route::group(['prefix' => '/meeting-member'], function() {
     Route::post('/add', [MeetingMemberApi::class, 'add']);
     Route::post('/update', [MeetingMemberApi::class, 'update']);
     Route::post('/delete', [MeetingMemberApi::class, 'delete']);
+});
+
+Route::group(['prefix' => '/external-participants'], function() {
+    Route::get('/search', [ExternalParticipantApi::class, 'search']);
 });
 
 Route::group(['prefix' => '/face'], function() {
