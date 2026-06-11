@@ -11,6 +11,7 @@ use App\Models\Monitor\ContactPerson as ContactPersonModel;
 use App\Models\Monitor\Person;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class MeetingService
 {
@@ -19,21 +20,27 @@ class MeetingService
     }
 
     public function list(){
+        $columns = [
+            'meeting_id',
+            'name',
+            'description',
+            'location',
+            'scheduled_start',
+            'scheduled_finish',
+            'started_at',
+            'finished_at',
+            'meeting_type_id',
+            'code',
+            'created_at',
+            'updated_at',
+        ];
+
+        if(Schema::hasColumn('meeting', 'attendance_closed_at')){
+            $columns []= 'attendance_closed_at';
+        }
+
         $rs = Meeting::query()
-            ->select([
-                'meeting_id',
-                'name',
-                'description',
-                'location',
-                'scheduled_start',
-                'scheduled_finish',
-                'started_at',
-                'finished_at',
-                'meeting_type_id',
-                'code',
-                'created_at',
-                'updated_at',
-            ])
+            ->select($columns)
             ->where('is_deleted', 0)
             ->withCount([
                 'members as members_count' => function ($q) {
@@ -160,6 +167,67 @@ class MeetingService
             $meeting->save();
 
             DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    private function getActiveMeeting(string $meeting_id)
+    {
+        $meeting = Meeting::query()
+            ->where('meeting_id', $meeting_id)
+            ->where('is_deleted', 0)
+            ->first();
+
+        if(empty($meeting)){
+            throw new ApiException("Meeting with the specified id does not exists");
+        }
+
+        return $meeting;
+    }
+
+    private function assertAttendanceIsOpen(string $meeting_id)
+    {
+        $meeting = $this->getActiveMeeting($meeting_id);
+
+        if(!empty($meeting->attendance_closed_at)){
+            throw new ApiException("Absensi meeting sudah ditutup oleh admin");
+        }
+
+        return $meeting;
+    }
+
+    public function closeAttendance(string $meeting_id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $meeting = $this->getActiveMeeting($meeting_id);
+            $meeting->attendance_closed_at = Carbon::now();
+            $meeting->save();
+
+            DB::commit();
+
+            return $meeting;
+        } catch (\Throwable $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function openAttendance(string $meeting_id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $meeting = $this->getActiveMeeting($meeting_id);
+            $meeting->attendance_closed_at = null;
+            $meeting->save();
+
+            DB::commit();
+
+            return $meeting;
         } catch (\Throwable $e) {
             DB::rollback();
             throw $e;
@@ -372,6 +440,8 @@ class MeetingService
     public function addMember($meeting_id, $members){
         try {
             DB::beginTransaction();
+
+            $this->assertAttendanceIsOpen($meeting_id);
             
             $results = [];
             if(!empty($members)){
@@ -441,6 +511,10 @@ class MeetingService
         try {
             DB::beginTransaction();
 
+            if(!empty($input['meeting_id'])){
+                $this->assertAttendanceIsOpen($input['meeting_id']);
+            }
+
             // $mm = MeetingMember::select('*')
             //     ->where('meeting_member_id', !empty($input['meeting_member_id'])? $input['meeting_member_id']: '')
             //     ->orWhere(function($q) use ($input){
@@ -476,6 +550,8 @@ class MeetingService
             if(empty($mm)){
                 throw new ApiException("Member with the specified id does not exists");
             }
+
+            $this->assertAttendanceIsOpen($mm->meeting_id);
 
             $input['attend_at'] = Carbon::now();
 

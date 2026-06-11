@@ -30,6 +30,7 @@ class Meeting extends Model
         'scheduled_finish', 
         'started_at', 
         'finished_at',
+        'attendance_closed_at',
         'meeting_type_id',
         'code',
         'is_deleted'
@@ -55,6 +56,7 @@ class Meeting extends Model
         'scheduled_finish' => 'datetime',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'attendance_closed_at' => 'datetime',
     ];
 
     protected $with = ['meeting_type'];

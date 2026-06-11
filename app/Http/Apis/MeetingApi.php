@@ -159,6 +159,30 @@ class MeetingApi extends BaseController
         return response()->json(new ApiResponse());
     }
 
+    public function close_attendance(){
+        $json = request()->json()->all();
+
+        if(empty($json['meeting_id'])){
+            return response()->json(new ApiResponse(1, 'meeting_id wajib diisi'), 422);
+        }
+
+        $res = $this->meetingService->closeAttendance($json['meeting_id']);
+
+        return response()->json(new ApiResponse($res));
+    }
+
+    public function open_attendance(){
+        $json = request()->json()->all();
+
+        if(empty($json['meeting_id'])){
+            return response()->json(new ApiResponse(1, 'meeting_id wajib diisi'), 422);
+        }
+
+        $res = $this->meetingService->openAttendance($json['meeting_id']);
+
+        return response()->json(new ApiResponse($res));
+    }
+
     public function add_document(){
         $json = request()->json()->all();
 
